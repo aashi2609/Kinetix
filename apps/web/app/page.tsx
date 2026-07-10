@@ -15,7 +15,7 @@ export default function HomePage() {
   const { confirmImport, cancelImport } = useImportStream();
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-4xl flex-col gap-8 px-6 py-12">
+    <main className="mx-auto flex min-h-screen max-w-7xl flex-col gap-8 px-6 py-12">
       <header className="flex items-start justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-[var(--brand)]">GrowEasy</p>
