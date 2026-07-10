@@ -1,0 +1,71 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-display: "Fraunces", ui-serif, serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  --bg: #faf9f6;
+  --bg-elevated: #ffffff;
+  --ink: #16261e;
+  --ink-muted: #5b6b62;
+  --border: #e3e0d6;
+  --brand: #1f8f66;
+  --brand-dark: #125a41;
+  --danger: #b3432f;
+  --danger-bg: #fbeae6;
+}
+
+.dark {
+  --bg: #0f1510;
+  --bg-elevated: #17201a;
+  --ink: #eef3ef;
+  --ink-muted: #96a89d;
+  --border: #263229;
+  --brand: #3fa87f;
+  --brand-dark: #63c69a;
+  --danger: #e0765f;
+  --danger-bg: #2c1712;
+}
+
+* {
+  border-color: var(--border);
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+}
+
+.font-mono-data {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Visible keyboard focus everywhere — accessibility floor, not optional */
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 999px;
+}
