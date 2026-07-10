@@ -5,15 +5,30 @@ export function initSse(res: Response): void {
   res.setHeader("Content-Type", "text/event-stream");
   res.setHeader("Cache-Control", "no-cache, no-transform");
   res.setHeader("Connection", "keep-alive");
-  res.flushHeaders?.();
+  res.setHeader("X-Accel-Buffering", "no");
+  res.flushHeaders();
 }
 
 export function sendSseEvent(res: Response, event: ImportProgressEvent): void {
+  if (res.writableEnded) {
+    console.warn("⚠️  Attempted to write to ended stream:", event.type);
+    return;
+  }
   console.log("📡 Sending SSE event:", event.type);
   const data = `data: ${JSON.stringify(event)}\n\n`;
   res.write(data);
-  // Force flush the buffer so the client receives it immediately
-  if (typeof (res as any).flush === 'function') {
-    (res as any).flush();
+}
+
+export function sendSseEventSync(res: Response, event: ImportProgressEvent): void {
+  if (res.writableEnded) {
+    console.warn("⚠️  Attempted to write to ended stream:", event.type);
+    return;
+  }
+  console.log("📡 Sending SSE event (sync):", event.type);
+  const data = `data: ${JSON.stringify(event)}\n\n`;
+  res.write(data);
+  // Force immediate send - no buffering
+  if (typeof (res as any).flushHeaders === 'function') {
+    (res as any).flushHeaders();
   }
 }

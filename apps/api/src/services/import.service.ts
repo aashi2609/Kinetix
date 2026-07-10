@@ -4,7 +4,7 @@ import { config } from "../config";
 import { parseCsvBuffer, CsvParseError } from "./csv-parser.service";
 import { processBatches } from "./batch.service";
 import { getLlmProvider } from "../providers/provider.factory";
-import { sendSseEvent } from "../utils/sse";
+import { sendSseEvent, sendSseEventSync } from "../utils/sse";
 
 export class ImportValidationError extends Error {}
 
@@ -44,6 +44,8 @@ export async function runImportPipeline(buffer: Buffer, res: Response): Promise<
     (batchError) => sendSseEvent(res, { type: "batch-error", ...batchError })
   );
 
+  console.log("✅ Batches processed, outcomes:", outcomes.length);
+
   const imported: CrmRecord[] = [];
   const skipped: SkippedRecord[] = [];
 
@@ -67,8 +69,8 @@ export async function runImportPipeline(buffer: Buffer, res: Response): Promise<
     totalProcessed: rows.length,
   };
 
-  sendSseEvent(res, { type: "complete", result });
+  console.log("📊 Import result:", { imported: imported.length, skipped: skipped.length, total: rows.length });
   
-  // Give the client time to receive the final event before closing
-  await new Promise(resolve => setTimeout(resolve, 100));
+  sendSseEventSync(res, { type: "complete", result });
+  console.log("📨 Complete event sent");
 }

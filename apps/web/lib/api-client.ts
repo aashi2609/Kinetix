@@ -19,10 +19,12 @@ export async function streamImport(file: File, handlers: StreamImportHandlers, s
 
   console.log("🚀 Sending import request to:", `${API_URL}/api/import/process`);
   
+  // Don't pass the abort signal to prevent premature cancellation
   const res = await fetch(`${API_URL}/api/import/process`, {
     method: "POST",
     body: formData,
-    signal,
+    // signal, // Removed - causing early disconnection
+    keepalive: true,
   });
   
   console.log("📥 Response status:", res.status, res.ok);
@@ -40,42 +42,49 @@ export async function streamImport(file: File, handlers: StreamImportHandlers, s
   const decoder = new TextDecoder();
   let buffer = "";
 
-  while (true) {
-    const { value, done } = await reader.read();
-    if (done) {
-      console.log("🏁 Stream finished");
-      break;
-    }
-
-    const chunk = decoder.decode(value, { stream: true });
-    console.log("📦 Received chunk:", chunk.length, "bytes");
-    buffer += chunk;
-    const events = buffer.split("\n\n");
-    buffer = events.pop() ?? "";
-
-    console.log("🔍 Found", events.length, "events in buffer");
-
-    for (const raw of events) {
-      const line = raw.trim();
-      console.log("🔍 Processing line:", line.substring(0, 100));
-      if (!line.startsWith("data:")) continue;
-
-      const event = JSON.parse(line.slice(5).trim()) as ImportProgressEvent;
-      console.log("📨 Event received:", event.type, event);
-      switch (event.type) {
-        case "progress":
-          handlers.onProgress(event.processed, event.total);
-          break;
-        case "batch-error":
-          handlers.onBatchError(event.batchIndex, event.message, event.willRetry);
-          break;
-        case "complete":
-          handlers.onComplete(event.result);
-          break;
-        case "error":
-          handlers.onError(event.message);
-          break;
+  try {
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) {
+        console.log("🏁 Stream finished");
+        break;
       }
+
+      const chunk = decoder.decode(value, { stream: true });
+      console.log("📦 Received chunk:", chunk.length, "bytes:", chunk.substring(0, 200));
+      buffer += chunk;
+      const events = buffer.split("\n\n");
+      buffer = events.pop() ?? "";
+
+      console.log("🔍 Found", events.length, "events in buffer");
+
+      for (const raw of events) {
+        const line = raw.trim();
+        console.log("🔍 Processing line:", line.substring(0, 100));
+        if (!line.startsWith("data:")) continue;
+
+        const event = JSON.parse(line.slice(5).trim()) as ImportProgressEvent;
+        console.log("📨 Event received:", event.type, event);
+        switch (event.type) {
+          case "progress":
+            handlers.onProgress(event.processed, event.total);
+            break;
+          case "batch-error":
+            handlers.onBatchError(event.batchIndex, event.message, event.willRetry);
+            break;
+          case "complete":
+            handlers.onComplete(event.result);
+            break;
+          case "error":
+            handlers.onError(event.message);
+            break;
+        }
+      }
+    }
+  } catch (err) {
+    console.error("❌ Stream reading error:", err);
+    if (!signal?.aborted) {
+      handlers.onError(err instanceof Error ? err.message : "Stream reading failed");
     }
   }
 }

@@ -1,7 +1,8 @@
 import pLimit from "p-limit";
-import pRetry from "p-retry";
+import pRetry, { AbortError } from "p-retry";
 import { config } from "../config";
 import type { LlmProvider, RawRow } from "../providers/llm-provider.interface";
+import { ProviderHttpError } from "../providers/provider-http-error";
 import { validateExtractions, type ValidatedBatch } from "./validation.service";
 
 export interface BatchOutcome {
@@ -50,15 +51,23 @@ export async function processBatches(
   const limit = pLimit(config.batchConcurrency);
   let processed = 0;
 
-  console.log(`🔢 Processing ${rows.length} rows in ${batches.length} batches (size: ${config.batchSize}, concurrency: ${config.batchConcurrency})`);
-
   const tasks = batches.map((batchRows, batchIndex) =>
     limit(async (): Promise<BatchOutcome> => {
       try {
         const validated = await pRetry(
           async () => {
-            const raw = await provider.extractBatch(batchRows, headers);
-            return validateExtractions(raw, batchRows);
+            try {
+              const raw = await provider.extractBatch(batchRows, headers);
+              return validateExtractions(raw, batchRows);
+            } catch (err) {
+              if (err instanceof ProviderHttpError && !err.retryable) {
+                // A 404/400/401/403 will fail identically on every retry
+                // (e.g. a deprecated/removed model name) — stop immediately
+                // instead of burning the retry budget and the user's time.
+                throw new AbortError(err);
+              }
+              throw err;
+            }
           },
           {
             retries: 2,

@@ -14,14 +14,21 @@ export async function processImport(req: Request, res: Response, next: NextFunct
     initSse(res);
 
     // Client disconnects mid-stream shouldn't leave the pipeline writing to a dead socket.
+    let clientDisconnected = false;
     req.on("close", () => {
-      if (!res.writableEnded) res.end();
+      clientDisconnected = true;
+      console.log("⚠️  Client disconnected");
     });
 
     console.log("🔄 Starting import pipeline...");
+    
     await runImportPipeline(req.file.buffer, res);
-    console.log("✅ Import pipeline completed");
-    res.end();
+    
+    console.log("✅ Import pipeline completed, client disconnected:", clientDisconnected);
+    
+    if (!clientDisconnected && !res.writableEnded) {
+      res.end();
+    }
   } catch (err) {
     console.error("❌ Import pipeline error:", err);
     if (res.headersSent) {

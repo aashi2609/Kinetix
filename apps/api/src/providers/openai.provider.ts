@@ -1,6 +1,7 @@
 import { config } from "../config";
 import type { LlmProvider, RawExtraction, RawRow } from "./llm-provider.interface";
 import { SYSTEM_PROMPT, buildUserPrompt } from "./prompt";
+import { ProviderHttpError } from "./provider-http-error";
 
 const OPENAI_URL = "https://api.openai.com/v1/chat/completions";
 
@@ -30,7 +31,12 @@ export class OpenAiProvider implements LlmProvider {
 
     if (!res.ok) {
       const body = await res.text().catch(() => "");
-      throw new Error(`OpenAI request failed (${res.status}): ${body.slice(0, 300)}`);
+      const retryable = res.status >= 500 || res.status === 429;
+      throw new ProviderHttpError(
+        `OpenAI request failed (${res.status}): ${body}`,
+        res.status,
+        retryable
+      );
     }
 
     const data = (await res.json()) as {
