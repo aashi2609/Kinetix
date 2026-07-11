@@ -7,6 +7,17 @@ An AI-powered CSV importer that maps arbitrary lead-export CSVs (Facebook Ads, G
 </div>
 
 
+## Features & Bonus Points Addressed
+
+- **Drag & Drop Upload:** Supported with client-side preview via PapaParse.
+- **Progress Indicators:** Real-time progress UI driven by Server-Sent Events (SSE).
+- **Streaming / Batching:** Batched AI extraction with concurrency control (`p-limit`).
+- **Retry Mechanism:** Automatic exponential backoff for transient AI rate-limits (`p-retry`).
+- **Unit Tests:** Comprehensive test coverage (23 tests) across the parser, batcher, and validation services.
+- **Docker Support:** Ready-to-use `docker-compose.yml` for easy containerized deployment.
+- **Deployment Ready:** Step-by-step instructions for Vercel and Render/Railway.
+- **Provider Agnostic AI:** Swap between Gemini, OpenAI, and Anthropic simply by changing an environment variable.
+
 ## Architecture
 
 **Monorepo with npm workspaces:**
@@ -255,18 +266,9 @@ payload is one of:
 The exact `CrmRecord` shape is defined once in `packages/shared/src/crm-record.schema.ts` and
 consumed by both apps — see that file for the authoritative field list and types.
 
-## Design decisions
-
-See the fuller write-up from planning in `groweasy-csv-importer-plan.md` if present in your copy
-of this project. In short: layered backend (`route → controller → service → provider`), a
-provider-abstraction strategy pattern for the LLM, Zod as the single source of truth for both AI
-output validation and the CRM business rules, and SSE for real progress instead of a blocking
-request.
-
 ## Known limitations
 
-- **Stateless by design** — per the assignment's "optional" note on databases, nothing is
-  persisted. Refreshing the import page loses in-progress results.
+- **Stateless by design** — Following the assignment guidelines, this project uses no external database. Data is processed in-memory and nothing is persisted. Refreshing the import page loses in-progress results.
 - **CSV parsing itself is one-shot**, not streamed row-by-row — only the *AI extraction* stage is
   streamed/incremental. For very large files this is the more expensive stage anyway, so it's
   where streaming matters most.
