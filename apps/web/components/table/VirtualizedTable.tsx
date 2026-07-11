@@ -45,9 +45,9 @@ function formatCellValue(value: string | null | undefined, columnName: string): 
 export function VirtualizedTable({ columns, rows, rowClassName, maxHeight = 600 }: VirtualizedTableProps) {
   if (rows.length === 0) {
     return (
-      <div className="glass-panel flex flex-col items-center gap-2 rounded-2xl px-6 py-16 text-center">
+      <div className="glass-panel flex flex-col items-center gap-2 rounded-2xl px-4 py-12 text-center sm:px-6 sm:py-16">
         <p className="font-medium">No rows to show</p>
-        <p className="text-sm text-[var(--ink-muted)]">Upload a CSV to see a preview here.</p>
+        <p className="text-xs text-[var(--ink-muted)] sm:text-sm">Upload a CSV to see a preview here.</p>
       </div>
     );
   }
@@ -58,13 +58,13 @@ export function VirtualizedTable({ columns, rows, rowClassName, maxHeight = 600 
       className="glass-panel relative overflow-auto rounded-2xl"
     >
       <div className="overflow-x-auto">
-        <table className="w-full border-collapse text-sm">
+        <table className="w-full border-collapse text-xs sm:text-sm">
           <thead className="sticky top-0 z-10 bg-[var(--bg)] backdrop-blur-lg">
             <tr>
               {columns.map((col) => (
                 <th
                   key={col}
-                  className="whitespace-nowrap border-b border-[var(--border)] px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)]"
+                  className="whitespace-nowrap border-b border-[var(--border)] px-3 py-2 text-left text-[0.65rem] font-semibold uppercase tracking-wide text-[var(--ink-muted)] sm:px-4 sm:py-3 sm:text-xs"
                 >
                   {formatColumnName(col)}
                 </th>
@@ -81,7 +81,7 @@ export function VirtualizedTable({ columns, rows, rowClassName, maxHeight = 600 
                 )}
               >
                 {columns.map((col) => (
-                  <td key={col} className="whitespace-nowrap px-4 py-3 text-[var(--ink)]">
+                  <td key={col} className="whitespace-nowrap px-3 py-2 text-[var(--ink)] sm:px-4 sm:py-3">
                     {formatCellValue(row[col], col)}
                   </td>
                 ))}

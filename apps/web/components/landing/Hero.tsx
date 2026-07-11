@@ -28,18 +28,18 @@ const LINE_2 = ["One", "clean", "CRM", "import."];
 
 export function Hero() {
   return (
-    <section className="relative mx-auto flex max-w-4xl flex-col items-center px-6 pb-20 pt-24 text-center sm:pt-32">
+    <section className="relative mx-auto flex max-w-4xl flex-col items-center px-4 pb-16 pt-20 text-center sm:px-6 sm:pb-20 sm:pt-24 md:pt-32">
       <motion.span
         initial="hidden"
         animate="show"
         custom={0}
         variants={fadeUp}
-        className="glass-panel rounded-full px-4 py-1.5 text-xs font-medium uppercase tracking-wide text-[var(--brand-dark)]"
+        className="glass-panel rounded-full px-3 py-1.5 text-[0.65rem] font-medium uppercase tracking-wide text-[var(--brand-dark)] sm:px-4 sm:text-xs"
       >
         AI-powered CRM data pipeline
       </motion.span>
 
-      <h1 className="mt-6 font-display text-4xl font-semibold leading-[1.1] sm:text-6xl">
+      <h1 className="mt-4 font-display text-3xl font-semibold leading-[1.1] sm:mt-6 sm:text-4xl md:text-5xl lg:text-6xl">
         <span className="block overflow-hidden pb-1">
           {LINE_1.map((w, i) => (
             <motion.span
@@ -77,12 +77,12 @@ export function Hero() {
         animate="show"
         custom={0.7}
         variants={fadeUp}
-        className="mt-6 max-w-xl text-balance text-base text-[var(--ink-muted)] sm:text-lg"
+        className="mt-4 max-w-xl text-balance text-sm text-[var(--ink-muted)] sm:mt-6 sm:text-base md:text-lg"
       >
         Kinetix — An AI CSV importer that reads any lead export format and intelligently maps it to your CRM schema in seconds.
       </motion.p>
 
-      <motion.div initial="hidden" animate="show" custom={0.8} variants={fadeUp} className="mt-10">
+      <motion.div initial="hidden" animate="show" custom={0.8} variants={fadeUp} className="mt-8 sm:mt-10">
         <MagneticWrap>
           <Link href="/import">
             <Button variant="cta">
@@ -100,7 +100,7 @@ export function Hero() {
         animate="show"
         custom={0.9}
         variants={fadeUp}
-        className="mt-16 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-xs text-[var(--ink-muted)]"
+        className="mt-12 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[0.65rem] text-[var(--ink-muted)] sm:mt-16 sm:gap-x-8 sm:gap-y-3 sm:text-xs"
       >
         <Stat value="15" label="CRM fields mapped" />
         <Divider />
@@ -114,8 +114,8 @@ export function Hero() {
 
 function Stat({ value, label }: { value: string; label: string }) {
   return (
-    <span className="flex items-baseline gap-1.5">
-      <span className="font-display text-lg font-semibold text-[var(--ink)]">{value}</span>
+    <span className="flex items-baseline gap-1 sm:gap-1.5">
+      <span className="font-display text-base font-semibold text-[var(--ink)] sm:text-lg">{value}</span>
       {label}
     </span>
   );

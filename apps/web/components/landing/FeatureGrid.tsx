@@ -39,18 +39,18 @@ const FEATURES = [
 
 export function FeatureGrid() {
   return (
-    <section id="how-it-works" className="mx-auto max-w-5xl px-6 py-20">
+    <section id="how-it-works" className="mx-auto max-w-5xl px-4 py-16 sm:px-6 sm:py-20">
       <motion.h2
         initial={{ opacity: 0, y: 16 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-80px" }}
         transition={{ duration: 0.6 }}
-        className="text-center font-display text-2xl font-semibold sm:text-3xl"
+        className="text-center font-display text-xl font-semibold sm:text-2xl md:text-3xl"
       >
         How it works
       </motion.h2>
 
-      <div className="mt-12 grid gap-5 sm:grid-cols-2">
+      <div className="mt-8 grid gap-4 sm:mt-12 sm:grid-cols-2 sm:gap-5">
         {FEATURES.map((f, i) => (
           <motion.div
             key={f.title}
@@ -58,7 +58,7 @@ export function FeatureGrid() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-60px" }}
             transition={{ duration: 0.6, delay: i * 0.08 }}
-            className="glass-panel group relative overflow-hidden rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1"
+            className="glass-panel group relative overflow-hidden rounded-2xl p-5 transition-all duration-300 hover:-translate-y-1 sm:p-6"
             style={{
               boxShadow: `0 0 0 rgba(0,0,0,0)`,
             }}
@@ -77,8 +77,8 @@ export function FeatureGrid() {
             >
               {f.icon}
             </svg>
-            <h3 className="relative z-10 mt-4 font-display text-lg font-semibold">{f.title}</h3>
-            <p className="relative z-10 mt-2 text-sm leading-relaxed text-[var(--ink-muted)]">{f.body}</p>
+            <h3 className="relative z-10 mt-3 font-display text-base font-semibold sm:mt-4 sm:text-lg">{f.title}</h3>
+            <p className="relative z-10 mt-1.5 text-xs leading-relaxed text-[var(--ink-muted)] sm:mt-2 sm:text-sm">{f.body}</p>
           </motion.div>
         ))}
       </div>

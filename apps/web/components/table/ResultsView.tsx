@@ -35,13 +35,13 @@ export function ResultsView() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-2 sm:gap-3">
         <StatCard label="Total processed" value={total} />
         <StatCard label="Imported" value={imported.length} accent="brand" />
         <StatCard label="Skipped" value={skipped.length} accent="danger" />
       </div>
 
-      <div className="flex items-center gap-2 border-b border-[var(--border)]">
+      <div className="flex items-center gap-2 overflow-x-auto border-b border-[var(--border)]">
         <TabButton active={tab === "imported"} onClick={() => setTab("imported")}>
           Imported ({imported.length})
         </TabButton>
@@ -74,10 +74,10 @@ export function ResultsView() {
 
 function StatCard({ label, value, accent }: { label: string; value: number; accent?: "brand" | "danger" }) {
   return (
-    <div className="glass-panel rounded-2xl p-4">
-      <p className="text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)]">{label}</p>
+    <div className="glass-panel rounded-xl p-3 sm:rounded-2xl sm:p-4">
+      <p className="text-[0.65rem] font-semibold uppercase tracking-wide text-[var(--ink-muted)] sm:text-xs">{label}</p>
       <p
-        className="mt-1 font-display text-3xl"
+        className="mt-0.5 font-display text-2xl sm:mt-1 sm:text-3xl"
         style={{ color: accent === "brand" ? "var(--brand)" : accent === "danger" ? "var(--danger)" : "var(--ink)" }}
       >
         {value}
@@ -98,7 +98,7 @@ function TabButton({
   return (
     <button
       onClick={onClick}
-      className={`-mb-px border-b-2 px-3 py-2 text-sm font-medium transition-colors ${
+      className={`-mb-px whitespace-nowrap border-b-2 px-3 py-2 text-xs font-medium transition-colors sm:text-sm ${
         active
           ? "border-[var(--brand)] text-[var(--ink)]"
           : "border-transparent text-[var(--ink-muted)] hover:text-[var(--ink)]"

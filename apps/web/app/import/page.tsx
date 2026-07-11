@@ -25,7 +25,7 @@ export default function ImportPage() {
   const { confirmImport, cancelImport } = useImportStream();
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-4xl flex-col gap-8 px-6 py-10">
+    <main className="mx-auto flex min-h-screen max-w-7xl flex-col gap-6 px-4 py-6 sm:gap-8 sm:px-6 sm:py-10">
       <header className="glass-panel flex items-center justify-between rounded-full px-5 py-3">
         <Link href="/">
           <Logo size={22} />
@@ -34,14 +34,14 @@ export default function ImportPage() {
       </header>
 
       <div className="text-center">
-        <h1 className="font-display text-2xl font-semibold sm:text-3xl">
+        <h1 className="font-display text-xl font-semibold sm:text-2xl md:text-3xl">
           {status === "idle" && "Import your leads"}
           {status === "previewing" && "Preview before you import"}
           {status === "processing" && "AI is mapping your data"}
           {status === "done" && "Import complete"}
           {status === "error" && "Something went wrong"}
         </h1>
-        <p className="mt-2 text-sm text-[var(--ink-muted)]">
+        <p className="mt-2 text-xs text-[var(--ink-muted)] sm:text-sm">
           Any lead CSV — Facebook, Google Ads, or a manual spreadsheet — mapped straight into
           your CRM format.
         </p>
@@ -56,10 +56,10 @@ export default function ImportPage() {
 
         {status === "previewing" && preview && (
           <motion.section key="previewing" {...fade} className="flex flex-col gap-4">
-            <div className="glass-panel flex flex-col gap-3 rounded-2xl p-5 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <h2 className="font-medium">Preview</h2>
-                <p className="text-sm text-[var(--ink-muted)]">
+            <div className="glass-panel flex flex-col gap-3 rounded-2xl p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+              <div className="min-w-0 flex-1">
+                <h2 className="truncate font-medium">Preview</h2>
+                <p className="truncate text-xs text-[var(--ink-muted)] sm:text-sm">
                   {file?.name} · {preview.rows.length} row{preview.rows.length === 1 ? "" : "s"} ·{" "}
                   {preview.headers.length} columns detected
                 </p>
