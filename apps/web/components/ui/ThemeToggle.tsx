@@ -4,12 +4,13 @@ import { useEffect, useState } from "react";
 import { Button } from "./Button";
 
 export function ThemeToggle() {
-  const [isDark, setIsDark] = useState(false);
+  // Dark is the intentional default for this app's aurora aesthetic —
+  // only an explicit prior choice (not system preference) switches to light.
+  const [isDark, setIsDark] = useState(true);
 
   useEffect(() => {
     const stored = localStorage.getItem("theme");
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    const dark = stored ? stored === "dark" : prefersDark;
+    const dark = stored ? stored === "dark" : true;
     setIsDark(dark);
     document.documentElement.classList.toggle("dark", dark);
   }, []);

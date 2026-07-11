@@ -2,6 +2,7 @@
 
 import { useCallback, useRef, useState } from "react";
 import clsx from "clsx";
+import { motion } from "framer-motion";
 import { useCsvUpload } from "@/lib/hooks/useCsvUpload";
 
 export function Dropzone() {
@@ -32,26 +33,30 @@ export function Dropzone() {
       onDragLeave={() => setIsDragging(false)}
       onDrop={onDrop}
       className={clsx(
-        "group flex cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed px-8 py-16 text-center transition-colors",
+        "glass-panel group flex cursor-pointer flex-col items-center justify-center gap-4 rounded-3xl border-2 border-dashed px-8 py-20 text-center transition-all duration-300",
         isDragging
-          ? "border-[var(--brand)] bg-[var(--brand)]/5"
-          : "border-[var(--border)] bg-[var(--bg-elevated)] hover:border-[var(--brand)]/60"
+          ? "scale-[1.01] border-[var(--brand)] shadow-[0_0_60px_-15px_var(--brand)]"
+          : "border-[var(--border)] hover:border-[var(--brand)]/60"
       )}
     >
-      <svg
-        width="40"
-        height="40"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="var(--brand)"
-        strokeWidth="1.6"
-        className="transition-transform group-hover:-translate-y-0.5"
+      <motion.div
+        className="animate-float-y flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--brand)]/10"
+        animate={isDragging ? { scale: 1.15 } : { scale: 1 }}
       >
-        <path d="M12 16V4M12 4l-4 4M12 4l4 4" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
+        <svg
+          width="30"
+          height="30"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="var(--brand)"
+          strokeWidth="1.6"
+        >
+          <path d="M12 16V4M12 4l-4 4M12 4l4 4" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </motion.div>
       <div>
-        <p className="text-base font-medium">Drop your CSV here, or click to browse</p>
+        <p className="font-display text-lg font-medium">Drop your CSV here, or click to browse</p>
         <p className="mt-1 text-sm text-[var(--ink-muted)]">
           Any lead-export format works — Facebook, Google Ads, or a manual spreadsheet. Max 5MB.
         </p>

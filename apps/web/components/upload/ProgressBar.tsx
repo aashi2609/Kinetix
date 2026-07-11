@@ -10,21 +10,21 @@ export function ProgressBar() {
   const retryingCount = batchErrors.filter((e) => e.willRetry).length;
 
   return (
-    <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-elevated)] p-5">
+    <div className="glass-panel rounded-2xl p-6">
       <div className="flex items-center justify-between text-sm">
         <span className="font-medium">Mapping leads to your CRM…</span>
         <span className="font-mono-data text-[var(--ink-muted)]">
           {progress.processed} / {progress.total || "…"}
         </span>
       </div>
-      <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-[var(--border)]">
+      <div className="relative mt-4 h-2.5 w-full overflow-hidden rounded-full bg-[var(--border)]">
         <div
-          className="h-full rounded-full bg-[var(--brand)] transition-[width] duration-300 ease-out"
+          className="animate-shimmer relative h-full overflow-hidden rounded-full bg-[var(--brand)] transition-[width] duration-300 ease-out"
           style={{ width: `${pct}%` }}
         />
       </div>
       {retryingCount > 0 && (
-        <p className="mt-2 text-xs text-[var(--ink-muted)]">
+        <p className="mt-3 text-xs text-[var(--ink-muted)]">
           Retrying {retryingCount} batch{retryingCount > 1 ? "es" : ""} that hit a transient error…
         </p>
       )}

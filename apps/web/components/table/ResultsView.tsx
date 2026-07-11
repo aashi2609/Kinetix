@@ -74,7 +74,7 @@ export function ResultsView() {
 
 function StatCard({ label, value, accent }: { label: string; value: number; accent?: "brand" | "danger" }) {
   return (
-    <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-elevated)] p-4">
+    <div className="glass-panel rounded-2xl p-4">
       <p className="text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)]">{label}</p>
       <p
         className="mt-1 font-display text-3xl"

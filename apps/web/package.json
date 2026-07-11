@@ -13,6 +13,7 @@
     "@tanstack/react-table": "^8.20.1",
     "@tanstack/react-virtual": "^3.8.3",
     "clsx": "^2.1.1",
+    "framer-motion": "^11.3.19",
     "next": "14.2.5",
     "papaparse": "^5.4.1",
     "react": "^18.3.1",

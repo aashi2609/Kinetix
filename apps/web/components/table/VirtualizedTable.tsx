@@ -45,7 +45,7 @@ function formatCellValue(value: string | null | undefined, columnName: string): 
 export function VirtualizedTable({ columns, rows, rowClassName, maxHeight = 600 }: VirtualizedTableProps) {
   if (rows.length === 0) {
     return (
-      <div className="flex flex-col items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--bg-elevated)] px-6 py-16 text-center">
+      <div className="glass-panel flex flex-col items-center gap-2 rounded-2xl px-6 py-16 text-center">
         <p className="font-medium">No rows to show</p>
         <p className="text-sm text-[var(--ink-muted)]">Upload a CSV to see a preview here.</p>
       </div>
@@ -55,39 +55,41 @@ export function VirtualizedTable({ columns, rows, rowClassName, maxHeight = 600 
   return (
     <div
       style={{ maxHeight }}
-      className="relative overflow-auto rounded-xl border border-[var(--border)] bg-[var(--bg-elevated)]"
+      className="glass-panel relative overflow-auto rounded-2xl"
     >
-      <table className="w-full border-collapse text-sm">
-        <thead className="sticky top-0 z-10 bg-[var(--bg-elevated)] shadow-[0_1px_0_var(--border)]">
-          <tr>
-            {columns.map((col) => (
-              <th
-                key={col}
-                className="whitespace-nowrap border-b border-[var(--border)] px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)]"
-              >
-                {formatColumnName(col)}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row, index) => (
-            <tr
-              key={index}
-              className={clsx(
-                "border-b border-[var(--border)]/60 hover:bg-[var(--bg-hover)]",
-                rowClassName?.(row, index)
-              )}
-            >
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse text-sm">
+          <thead className="sticky top-0 z-10 bg-[var(--bg)] backdrop-blur-lg">
+            <tr>
               {columns.map((col) => (
-                <td key={col} className="whitespace-nowrap px-4 py-3 text-[var(--ink)]">
-                  {formatCellValue(row[col], col)}
-                </td>
+                <th
+                  key={col}
+                  className="whitespace-nowrap border-b border-[var(--border)] px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[var(--ink-muted)]"
+                >
+                  {formatColumnName(col)}
+                </th>
               ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {rows.map((row, index) => (
+              <tr
+                key={index}
+                className={clsx(
+                  "border-b border-[var(--border)]/40 transition-colors hover:bg-[var(--brand)]/5",
+                  rowClassName?.(row, index)
+                )}
+              >
+                {columns.map((col) => (
+                  <td key={col} className="whitespace-nowrap px-4 py-3 text-[var(--ink)]">
+                    {formatCellValue(row[col], col)}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
