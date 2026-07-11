@@ -10,6 +10,7 @@ import { VirtualizedTable } from "@/components/table/VirtualizedTable";
 import { ResultsView } from "@/components/table/ResultsView";
 import { Button } from "@/components/ui/Button";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { Logo } from "@/components/ui/Logo";
 
 const fade = {
   initial: { opacity: 0, y: 12 },
@@ -26,9 +27,8 @@ export default function ImportPage() {
   return (
     <main className="mx-auto flex min-h-screen max-w-4xl flex-col gap-8 px-6 py-10">
       <header className="glass-panel flex items-center justify-between rounded-full px-5 py-3">
-        <Link href="/" className="flex items-center gap-2">
-          <span className="h-2 w-2 rounded-full bg-[var(--brand)]" />
-          <span className="font-display text-lg font-semibold">GrowEasy</span>
+        <Link href="/">
+          <Logo size={22} />
         </Link>
         <ThemeToggle />
       </header>

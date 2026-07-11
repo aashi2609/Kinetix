@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
+import { MagneticWrap } from "@/components/ui/MagneticWrap";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -13,6 +14,18 @@ const fadeUp = {
   }),
 };
 
+const word = {
+  hidden: { opacity: 0, y: "0.6em" },
+  show: (delay: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, delay, ease: [0.22, 1, 0.36, 1] },
+  }),
+};
+
+const LINE_1 = ["Any", "CSV.", "Every", "format."];
+const LINE_2 = ["One", "clean", "CRM", "import."];
+
 export function Hero() {
   return (
     <section className="relative mx-auto flex max-w-4xl flex-col items-center px-6 pb-20 pt-24 text-center sm:pt-32">
@@ -21,50 +34,71 @@ export function Hero() {
         animate="show"
         custom={0}
         variants={fadeUp}
-        className="glass-panel rounded-full px-4 py-1.5 text-xs font-medium uppercase tracking-wide text-[var(--brand)]"
+        className="glass-panel rounded-full px-4 py-1.5 text-xs font-medium uppercase tracking-wide text-[var(--brand-dark)]"
       >
         AI-powered CRM data pipeline
       </motion.span>
 
-      <motion.h1
-        initial="hidden"
-        animate="show"
-        custom={0.1}
-        variants={fadeUp}
-        className="mt-6 font-display text-4xl font-semibold leading-[1.1] sm:text-6xl"
-      >
-        Any CSV. Every format.
-        <br />
-        <span className="text-gradient-brand">One clean CRM import.</span>
-      </motion.h1>
+      <h1 className="mt-6 font-display text-4xl font-semibold leading-[1.1] sm:text-6xl">
+        <span className="block overflow-hidden pb-1">
+          {LINE_1.map((w, i) => (
+            <motion.span
+              key={w}
+              initial="hidden"
+              animate="show"
+              custom={0.08 * i}
+              variants={word}
+              className="inline-block"
+            >
+              {w}
+              {i < LINE_1.length - 1 ? "\u00A0" : ""}
+            </motion.span>
+          ))}
+        </span>
+        <span className="block overflow-hidden pb-1 text-gradient-brand">
+          {LINE_2.map((w, i) => (
+            <motion.span
+              key={w}
+              initial="hidden"
+              animate="show"
+              custom={0.08 * (LINE_1.length + i)}
+              variants={word}
+              className="inline-block"
+            >
+              {w}
+              {i < LINE_2.length - 1 ? "\u00A0" : ""}
+            </motion.span>
+          ))}
+        </span>
+      </h1>
 
       <motion.p
         initial="hidden"
         animate="show"
-        custom={0.2}
+        custom={0.7}
         variants={fadeUp}
         className="mt-6 max-w-xl text-balance text-base text-[var(--ink-muted)] sm:text-lg"
       >
-        Stop wrestling with mismatched columns. Upload a lead export from Facebook, Google Ads,
-        or a messy manual spreadsheet — AI reads it, maps it, and hands you back clean, validated
-        CRM records in seconds.
+        Kinetix — An AI CSV importer that reads any lead export format and intelligently maps it to your CRM schema in seconds.
       </motion.p>
 
-      <motion.div initial="hidden" animate="show" custom={0.3} variants={fadeUp} className="mt-10">
-        <Link href="/import">
-          <Button variant="cta">
-            Start parsing your files now
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
-              <path d="M5 12h14M13 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </Button>
-        </Link>
+      <motion.div initial="hidden" animate="show" custom={0.8} variants={fadeUp} className="mt-10">
+        <MagneticWrap>
+          <Link href="/import">
+            <Button variant="cta">
+              Start parsing your files now
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
+                <path d="M5 12h14M13 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </Button>
+          </Link>
+        </MagneticWrap>
       </motion.div>
 
       <motion.div
         initial="hidden"
         animate="show"
-        custom={0.4}
+        custom={0.9}
         variants={fadeUp}
         className="mt-16 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-xs text-[var(--ink-muted)]"
       >

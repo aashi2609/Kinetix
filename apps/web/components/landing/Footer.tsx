@@ -3,6 +3,8 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
+import { MagneticWrap } from "@/components/ui/MagneticWrap";
+import { Logo } from "@/components/ui/Logo";
 
 export function ClosingCta() {
   return (
@@ -19,9 +21,11 @@ export function ClosingCta() {
           Your import shouldn't be.
         </h2>
         <div className="mt-8">
-          <Link href="/import">
-            <Button variant="cta">Start parsing your files now</Button>
-          </Link>
+          <MagneticWrap>
+            <Link href="/import">
+              <Button variant="cta">Start parsing your files now</Button>
+            </Link>
+          </MagneticWrap>
         </div>
       </motion.div>
     </section>
@@ -30,8 +34,9 @@ export function ClosingCta() {
 
 export function Footer() {
   return (
-    <footer className="border-t border-[var(--border)] px-6 py-8 text-center text-xs text-[var(--ink-muted)]">
-      GrowEasy AI CSV Importer — built for the GrowEasy Software Developer assignment.
+    <footer className="flex flex-col items-center gap-3 border-t border-[var(--border)] px-6 py-10 text-center text-xs text-[var(--ink-muted)]">
+      <Logo size={18} />
+      <p>Kinetix — an AI CSV importer, built for the GrowEasy Software Developer assignment.</p>
     </footer>
   );
 }

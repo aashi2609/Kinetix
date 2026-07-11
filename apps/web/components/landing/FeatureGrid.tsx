@@ -9,6 +9,7 @@ const FEATURES = [
     ),
     title: "Any format in",
     body: "Drop a CSV from Facebook Ads, Google Ads, a real-estate CRM, or a spreadsheet you made by hand. Column names and layouts don't matter.",
+    glowColor: "rgba(139, 92, 246, 0.4)", // Purple
   },
   {
     icon: (
@@ -20,16 +21,19 @@ const FEATURES = [
     ),
     title: "AI field mapping",
     body: "Gemini reads the columns and sample values, then intelligently maps them onto your fixed 15-field CRM schema — no manual configuration.",
+    glowColor: "rgba(59, 130, 246, 0.4)", // Blue
   },
   {
     icon: <path d="M9 12l2 2 4-4M12 22a10 10 0 100-20 10 10 0 000 20z" strokeLinecap="round" strokeLinejoin="round" />,
     title: "Validated output",
     body: "Every record is re-checked against strict schema rules before import — bad dates, invalid statuses, and contact-less rows are cleanly separated out.",
+    glowColor: "rgba(34, 197, 94, 0.4)", // Green
   },
   {
     icon: <path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z" strokeLinecap="round" strokeLinejoin="round" />,
     title: "Live progress",
     body: "Batches stream in as they finish, with real-time progress and automatic retries — large files never leave you staring at a dead spinner.",
+    glowColor: "rgba(251, 146, 60, 0.4)", // Orange
   },
 ];
 
@@ -54,7 +58,13 @@ export function FeatureGrid() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-60px" }}
             transition={{ duration: 0.6, delay: i * 0.08 }}
-            className="glass-panel group rounded-2xl p-6 transition-transform hover:-translate-y-1"
+            className="glass-panel group relative overflow-hidden rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1"
+            style={{
+              boxShadow: `0 0 0 rgba(0,0,0,0)`,
+            }}
+            whileHover={{
+              boxShadow: `0 0 40px ${f.glowColor}, 0 0 80px ${f.glowColor}`,
+            }}
           >
             <svg
               width="26"
@@ -63,12 +73,12 @@ export function FeatureGrid() {
               fill="none"
               stroke="var(--brand)"
               strokeWidth="1.7"
-              className="transition-transform group-hover:scale-110"
+              className="relative z-10 transition-transform group-hover:scale-110"
             >
               {f.icon}
             </svg>
-            <h3 className="mt-4 font-display text-lg font-semibold">{f.title}</h3>
-            <p className="mt-2 text-sm leading-relaxed text-[var(--ink-muted)]">{f.body}</p>
+            <h3 className="relative z-10 mt-4 font-display text-lg font-semibold">{f.title}</h3>
+            <p className="relative z-10 mt-2 text-sm leading-relaxed text-[var(--ink-muted)]">{f.body}</p>
           </motion.div>
         ))}
       </div>
