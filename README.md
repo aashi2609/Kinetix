@@ -1,131 +1,146 @@
 # Kinetix — AI CSV Importer
 
-An AI-powered CSV importer that maps arbitrary lead-export CSVs (Facebook Ads, Google Ads,
-real-estate CRM exports, manual spreadsheets — any layout) onto a fixed CRM schema
-## Contents
+<div align="center">
 
-- [Architecture](#architecture)
-- [Import pipeline](#import-pipeline)
-- [Local setup](#local-setup)
-- [Running tests](#running-tests)
-- [Docker](#docker)
-- [Deployment](#deployment)
-- [Environment variables](#environment-variables)
-- [API contract](#api-contract)
-- [Design decisions](#design-decisions)
-- [Known limitations](#known-limitations)
+An AI-powered CSV importer that maps arbitrary lead-export CSVs (Facebook Ads, Google Ads, real-estate CRM exports, manual spreadsheets — any layout) onto a fixed CRM schema.
+
+</div>
 
 
 ## Architecture
 
-Monorepo, npm workspaces:
+**Monorepo with npm workspaces:**
 
-\```
-apps/web      Next.js 14 (App Router) — landing page (/) + import flow (/import)
-apps/api      Express + TypeScript — CSV parsing, AI extraction, SSE streaming
-packages/shared  Zod schemas + types shared by both apps (single source of truth)
-\```
+```
+kinetix-csv-importer/
+├── apps/
+│   ├── web/          # Next.js 14 frontend (landing + import flow)
+│   └── api/          # Express + TypeScript backend (CSV parsing, AI, SSE)
+└── packages/
+    └── shared/       # Zod schemas + types (single source of truth)
+```
 
-\```mermaid
-flowchart LR
-    subgraph Browser
-        Landing["/ — landing page"]
-        Import["/import — upload flow"]
+### System Architecture
+
+```mermaid
+graph TB
+    subgraph "Frontend - Next.js 14"
+        Landing["Landing Page<br/>(/)"]
+        Import["Import Flow<br/>(/import)"]
+        Dropzone["CSV Upload<br/>(PapaParse preview)"]
+        SSEClient["SSE Client<br/>(Real-time streaming)"]
     end
 
-    subgraph "apps/web (Next.js)"
-        Dropzone["Dropzone + client CSV preview\n(PapaParse, no AI yet)"]
-        SSEClient["SSE client\n(lib/api-client.ts)"]
-    end
-
-    subgraph "apps/api (Express)"
-        Upload["POST /api/import/process\n(multer, memory storage)"]
-        Parser["CSV parser\n(csv-parse)"]
-        Batcher["Batch service\n(p-limit concurrency + p-retry)"]
-        Validator["Validation service\n(Zod schema + business rules)"]
-        Provider["LLM provider\n(Gemini / OpenAI / Anthropic)"]
-    end
-
-    subgraph "packages/shared"
-        Schema["CrmRecordSchema (Zod)"]
-    end
-
-    Landing -->|"Start parsing your files now"| Import
-    Import --> Dropzone
-    Dropzone -->|Confirm & import| SSEClient
-    SSEClient -->|multipart/form-data| Upload
-    Upload --> Parser
-    Parser --> Batcher
-    Batcher <--> Provider
-    Batcher --> Validator
-    Validator -.uses.-> Schema
-    Validator -->|SSE: progress / batch-error / complete| SSEClient
-    SSEClient --> Import
-\```
-
-## Import pipeline
-
-\```mermaid
-sequenceDiagram
-    participant U as User
-    participant W as apps/web
-    participant A as apps/api
-    participant L as LLM provider
-
-    U->>W: Drop / select CSV
-    W->>W: Parse client-side (PapaParse, worker thread)
-    W-->>U: Preview table (no AI call yet)
-    U->>W: Click "Confirm & import"
-    W->>A: POST /api/import/process (multipart file)
-    A->>A: Parse CSV → rows + headers
-    A->>A: Split rows into batches (BATCH_SIZE)
-    loop each batch, bounded by BATCH_CONCURRENCY
-        A->>L: extractBatch(rows, headers)
-        alt success
-            L-->>A: raw JSON records
-            A->>A: normalize multi-email/mobile + Zod validate + sanitize line breaks
-            A-->>W: SSE: progress
-        else transient failure (429/5xx)
-            L-->>A: error
-            A->>A: retry (up to 2x, backoff)
-            A-->>W: SSE: batch-error (willRetry: true)
-        else permanent failure (400/401/403/404)
-            L-->>A: error
-            A->>A: abort immediately, no retry
-            A-->>W: SSE: batch-error (willRetry: false)
+    subgraph "Backend - Express API"
+        Upload["POST /api/import/process<br/>(multipart upload)"]
+        Parser["CSV Parser<br/>(csv-parse)"]
+        Batcher["Batch Service<br/>(p-limit + p-retry)"]
+        Validator["Validation Service<br/>(Zod + business rules)"]
+        
+        subgraph "AI Providers"
+            Gemini["Gemini<br/>(default)"]
+            OpenAI["OpenAI<br/>(gpt-4o-mini)"]
+            Anthropic["Anthropic<br/>(claude)"]
         end
     end
-    A-->>W: SSE: complete (imported[], skipped[], counts)
-    W-->>U: Results table — imported vs skipped, with reasons
-\```
 
-Key decisions, briefly:
+    subgraph "Shared Package"
+        Schema["Zod Schemas<br/>(CrmRecordSchema)"]
+    end
 
-- **Provider abstraction** (`apps/api/src/providers/`) — an `LlmProvider` interface with Gemini,
-  OpenAI, and Anthropic implementations. Swap providers via the `AI_PROVIDER` env var, no code
-  changes. Gemini is the default because it has a usable free tier.
-- **Never trust the model** — every AI-returned record goes through three defense-in-depth
-  layers in `validation.service.ts`, regardless of what the prompt asked for:
-  1. `normalizeMultiValueFields` — re-derives the "first email/mobile primary, rest into
-     crm_note" rule in code, in case the model didn't comply.
-  2. Zod schema validation — enum membership, date parseability, field shapes.
-  3. `sanitizeLineBreaks` — escapes any raw newline in a free-text field to the literal `\n`
-     sequence, so an imported record stays a single valid CSV row if ever re-exported.
-- **SSE, not a blocking POST** — `/api/import/process` streams progress events as batches
-  complete, so the UI shows real progress and large files don't hit request timeouts.
-- **Batching + bounded concurrency + smart retry** — rows are chunked (`BATCH_SIZE`), processed
-  with `p-limit` concurrency control, and each batch retries up to twice on *transient* failures
-  (rate limits, 5xx). A *permanent* failure (bad/deprecated model name, auth error) aborts
-  immediately instead of wasting retries on a request that can never succeed — and still notifies
-  the UI, even though `p-retry` skips its normal failure callback for aborted attempts.
+    Landing -->|"Start parsing"| Import
+    Import --> Dropzone
+    Dropzone -->|"Confirm import"| SSEClient
+    SSEClient -->|"multipart/form-data"| Upload
+    Upload --> Parser
+    Parser --> Batcher
+    Batcher <-->|"AI extraction"| Gemini
+    Batcher <-->|"AI extraction"| OpenAI
+    Batcher <-->|"AI extraction"| Anthropic
+    Batcher --> Validator
+    Validator -.->|"validates against"| Schema
+    Validator -->|"SSE events"| SSEClient
+    SSEClient -->|"displays results"| Import
 
-## Local setup
+    style Gemini fill:#4285f4,stroke:#333,stroke-width:2px,color:#fff
+    style Schema fill:#10b981,stroke:#333,stroke-width:2px,color:#fff
+    style SSEClient fill:#8b5cf6,stroke:#333,stroke-width:2px,color:#fff
+```
+
+## Import Pipeline
+
+The import process streams data in real-time through several validation layers:
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Frontend as Next.js Frontend
+    participant API as Express API
+    participant AI as AI Provider<br/>(Gemini/OpenAI/Anthropic)
+
+    User->>Frontend: Upload CSV file
+    Frontend->>Frontend: Client-side preview (PapaParse)
+    Frontend-->>User: Show preview table
+    User->>Frontend: Click "Confirm & import"
+    Frontend->>API: POST /api/import/process (multipart)
+    
+    API->>API: Parse CSV → extract rows + headers
+    API->>API: Split into batches (BATCH_SIZE=25)
+    
+    loop For each batch (concurrent: BATCH_CONCURRENCY=4)
+        API->>AI: Extract & map batch to CRM schema
+        
+        alt Success
+            AI-->>API: Return JSON records
+            API->>API: Normalize multi-values<br/>(email, mobile)
+            API->>API: Validate with Zod schema
+            API->>API: Sanitize line breaks
+            API-->>Frontend: SSE: progress event
+        else Transient Error (429/5xx)
+            AI-->>API: Error response
+            API->>API: Retry (up to 2x, exponential backoff)
+            API-->>Frontend: SSE: batch-error (willRetry: true)
+        else Permanent Error (400/401/404)
+            AI-->>API: Error response
+            API->>API: Abort, no retry
+            API-->>Frontend: SSE: batch-error (willRetry: false)
+        end
+    end
+    
+    API-->>Frontend: SSE: complete event<br/>(imported[], skipped[], counts)
+    Frontend-->>User: Display results table<br/>(imported vs skipped)
+```
+
+### Key Design Decisions
+
+**Provider abstraction** (`apps/api/src/providers/`)  
+An `LlmProvider` interface with Gemini, OpenAI, and Anthropic implementations. Swap providers via `AI_PROVIDER` env var, no code changes. Gemini is default (free tier available).
+
+**Defense-in-depth validation** (`validation.service.ts`)  
+Every AI-returned record goes through three validation layers:
+1. `normalizeMultiValueFields` — Re-derives "first email/mobile primary, rest into crm_note" rule
+2. Zod schema validation — Enum membership, date parseability, field shapes
+3. `sanitizeLineBreaks` — Escapes raw newlines to literal `\n` for safe CSV re-export
+
+**SSE streaming** (not blocking POST)  
+`/api/import/process` streams progress events as batches complete. UI shows real-time progress, large files don't hit timeouts.
+
+**Batching + concurrency + smart retry**  
+- Rows chunked by `BATCH_SIZE` (default 25)
+- Processed with `p-limit` concurrency control (default 4)
+- Retries up to 2x on transient failures (rate limits, 5xx)
+- Permanent failures (bad model, auth error) abort immediately
+- UI notified even when retry logic is bypassed
+
+---
+
+## Local Setup
 
 **Prerequisites:** Node.js 20+, and a free API key from
 [aistudio.google.com/apikey](https://aistudio.google.com/apikey) (or a paid OpenAI/Anthropic key
 if you'd rather use one of those).
 
-\```bash
+```bash
 git clone <your-repo-url>
 cd kinetix-csv-importer   # or whatever you named the folder
 npm install
@@ -142,7 +157,7 @@ npm run build:shared
 
 # Run both apps together
 npm run dev
-\```
+```
 
 - Landing page: http://localhost:3000
 - Import flow: http://localhost:3000/import
@@ -154,9 +169,9 @@ mapping and the skip logic before your real data.
 
 ## Running tests
 
-\```bash
+```bash
 npm run test -w apps/api
-\```
+```
 
 23 tests across three suites:
 - `validation.service.test.ts` — schema enforcement, multi-value email/mobile normalization,
@@ -168,10 +183,10 @@ npm run test -w apps/api
 
 ## Docker
 
-\```bash
+```bash
 cp .env.example apps/api/.env   # fill in your API key first
 docker compose up --build
-\```
+```
 
 ## Deployment
 
@@ -213,7 +228,7 @@ See [`.env.example`](.env.example) for the full list with defaults.
 Response is `Content-Type: text/event-stream`, not a single JSON body. Each SSE frame's `data:`
 payload is one of:
 
-\```jsonc
+```jsonc
 // Emitted after each batch finishes (success or exhausted-retries failure)
 { "type": "progress", "processed": 25, "total": 100, "batchIndex": 0, "totalBatches": 4 }
 
@@ -235,7 +250,7 @@ payload is one of:
 // Emitted instead of "complete" if the pipeline fails before any batch runs
 // (e.g. malformed CSV, empty file, row-count limit exceeded)
 { "type": "error", "message": "..." }
-\```
+```
 
 The exact `CrmRecord` shape is defined once in `packages/shared/src/crm-record.schema.ts` and
 consumed by both apps — see that file for the authoritative field list and types.
