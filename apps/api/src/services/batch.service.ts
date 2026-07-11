@@ -61,9 +61,11 @@ export async function processBatches(
               return validateExtractions(raw, batchRows);
             } catch (err) {
               if (err instanceof ProviderHttpError && !err.retryable) {
-                // A 404/400/401/403 will fail identically on every retry
-                // (e.g. a deprecated/removed model name) — stop immediately
-                // instead of burning the retry budget and the user's time.
+                // p-retry does NOT call onFailedAttempt for AbortError — it
+                // stops immediately and rejects with originalError, skipping
+                // the callback entirely. So we notify here, manually, before
+                // throwing, or the SSE stream/UI never learns this batch failed.
+                onBatchError({ batchIndex, message: err.message, willRetry: false });
                 throw new AbortError(err);
               }
               throw err;
@@ -72,7 +74,6 @@ export async function processBatches(
           {
             retries: 2,
             onFailedAttempt: (err) => {
-              console.log(`⚠️  Batch ${batchIndex} attempt failed:`, err.message, `(${err.retriesLeft} retries left)`);
               onBatchError({
                 batchIndex,
                 message: err.message,
